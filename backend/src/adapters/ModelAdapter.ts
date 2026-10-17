@@ -127,8 +127,8 @@ async function callGeminiApi(prompt: string, timeoutMs = 35000): Promise<string>
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!geminiKey) throw new Error('No Google/Gemini key');
 
-  // gemini-3.8-flash and gemini-3.5-flash are active, fast, and highly reliable
-  const models = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-flash-latest'];
+  // Active, verified high-speed Gemini endpoints
+  const models = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-pro-latest'];
   let lastErr: any = null;
 
   for (const model of models) {
@@ -259,7 +259,7 @@ export async function analyzeImage(
 ): Promise<string> {
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (geminiKey) {
-    const visionModels = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-3.5-flash', 'gemini-flash-latest'];
+    const visionModels = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-pro-latest'];
     for (const vModel of visionModels) {
       try {
         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${vModel}:generateContent?key=${geminiKey}`;
