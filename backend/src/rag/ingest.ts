@@ -4,7 +4,7 @@ dotenv.config();
 import { ChromaClient } from 'chromadb';
 import { generateEmbedding } from '../adapters/ModelAdapter';
 
-interface VetDocument {
+export interface VetDocument {
   id: string;
   text: string;
   sourceTitle: string;
@@ -13,7 +13,7 @@ interface VetDocument {
   pageNumber?: number;
 }
 
-const VET_KNOWLEDGE_DOCUMENTS: VetDocument[] = [
+export const VET_KNOWLEDGE_DOCUMENTS: VetDocument[] = [
   {
     id: 'vet-tox-001',
     category: 'toxicology',

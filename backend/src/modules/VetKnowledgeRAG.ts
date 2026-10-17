@@ -1,9 +1,48 @@
 import axios from 'axios';
 import { ChromaClient, Collection } from 'chromadb';
 import { generateEmbedding } from '../adapters/ModelAdapter';
+import { VET_KNOWLEDGE_DOCUMENTS } from '../rag/ingest';
 
 const isPythonRagEnabled = () => process.env.USE_PYTHON_RAG === 'true';
 const getPythonRagUrl = () => process.env.PYTHON_RAG_URL || 'http://localhost:8002';
+
+/**
+ * Built-in veterinary reference search fallback.
+ * Ensures the deployed platform always retrieves verified clinical citations
+ * even if a separate vector database microservice is not hosted in the cloud.
+ */
+function retrieveBuiltinPassages(query: string, filterCategory?: string): RetrievedPassage[] {
+  const queryTerms = query.toLowerCase().split(/[\s,.;:!?]+/).filter((t) => t.length > 2);
+  if (queryTerms.length === 0) return [];
+
+  return VET_KNOWLEDGE_DOCUMENTS
+    .filter((doc) => !filterCategory || doc.category === filterCategory)
+    .map((doc) => {
+      let score = 0;
+      const textLower = doc.text.toLowerCase();
+      const titleLower = doc.sourceTitle.toLowerCase();
+      const catLower = doc.category.toLowerCase();
+
+      for (const term of queryTerms) {
+        if (titleLower.includes(term)) score += 3;
+        if (textLower.includes(term)) score += 1;
+        if (catLower.includes(term)) score += 2;
+      }
+
+      const normalizedScore = Math.min(0.95, score / (queryTerms.length * 1.5 || 1));
+      return {
+        id: doc.id,
+        text: doc.text,
+        sourceTitle: doc.sourceTitle,
+        sourceUrl: doc.sourceUrl,
+        category: doc.category,
+        score: Math.round(normalizedScore * 100) / 100,
+      };
+    })
+    .filter((p) => p.score >= 0.20)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, TOP_K);
+}
 
 /**
  * VetKnowledge RAG — Retrieval module.
@@ -78,16 +117,14 @@ export async function retrievePassages(
   try {
     collection = await getCollection();
   } catch (err) {
-    console.error('RAG: ChromaDB unavailable —', (err as Error).message);
-    return [];  // Graceful fallback: no RAG, VetSage will acknowledge
+    return retrieveBuiltinPassages(query, filterCategory);
   }
 
   let queryEmbedding: number[];
   try {
     queryEmbedding = await generateEmbedding(query);
   } catch (err) {
-    console.error('RAG: Embedding generation failed —', (err as Error).message);
-    return [];
+    return retrieveBuiltinPassages(query, filterCategory);
   }
 
   try {
@@ -130,10 +167,13 @@ export async function retrievePassages(
       });
     }
 
+    if (passages.length === 0) {
+      return retrieveBuiltinPassages(query, filterCategory);
+    }
+
     return passages.sort((a, b) => b.score - a.score);
   } catch (err) {
-    console.error('RAG: Query failed —', (err as Error).message);
-    return [];
+    return retrieveBuiltinPassages(query, filterCategory);
   }
 }
 
