@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "deepagents-python-quickstart": {
+      "source": "langchain-ai/langchain-skills",
+      "sourceType": "github",
+      "skillPath": "config/skills/deepagents-python-quickstart/SKILL.md",
+      "computedHash": "9aaf019196b0baa19b1611c6c930a5bd75e8f3eb6df8215dbeceba78356cd443"
+    }
+  }
+}

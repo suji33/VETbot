@@ -1,0 +1,9 @@
+{
+  "extraPaths": [
+    "C:/Users/rkaad/venv/Lib/site-packages",
+    "C:/Users/rkaad/AppData/Local/Programs/Python/Python311/Lib/site-packages",
+    "python-rag",
+    "python-rag/app",
+    "deep-agent"
+  ]
+}

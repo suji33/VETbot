@@ -1,0 +1,16 @@
+# Python RAG .gitignore
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.pytest_cache/
+chroma_db_data/
+*.sqlite
+*.sqlite3
+*.log
+.DS_Store

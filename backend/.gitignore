@@ -1,0 +1,10 @@
+# Backend .gitignore
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+logs/
+*.log
+npm-debug.log*
+.DS_Store
