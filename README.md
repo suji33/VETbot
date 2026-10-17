@@ -1,4 +1,4 @@
-# 🐾 PetCare AI — Enterprise Veterinary Clinical Intelligence Platform
+# 🐾 PetCare AI — Enterprise Veterinary Clinical Intelligence Platform  the bot hosting on this link: https://ve-tbot.vercel.app
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-19.0-61dafb?logo=react&logoColor=black)](https://react.dev/)
