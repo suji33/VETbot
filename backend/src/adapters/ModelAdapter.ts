@@ -24,7 +24,7 @@ function authHeaders() {
   return {
     Authorization: `Bearer ${apiKey}`,
     'Content-Type': 'application/json',
-    'HTTP-Referer': 'http://localhost:5173',
+    'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:5173',
     'X-Title': 'PetCare AI',
   };
 }

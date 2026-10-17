@@ -7,8 +7,9 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Reconfigure stdout for Windows console compatibility
-sys.stdout.reconfigure(encoding='utf-8')
+# Reconfigure stdout for Windows console compatibility safely
+if hasattr(sys.stdout, "reconfigure"):
+    getattr(sys.stdout, "reconfigure")(encoding='utf-8')
 
 # Load environment
 env_path = Path(__file__).resolve().parent.parent / "backend" / ".env"
