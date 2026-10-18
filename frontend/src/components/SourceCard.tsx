@@ -6,8 +6,8 @@ interface SourceCardProps {
 }
 
 export const SourceCard: React.FC<SourceCardProps> = ({ sources, theme = 'dark' }) => {
-  if (!sources || sources.length === 0) return null;
   const [isExpanded, setIsExpanded] = useState(false);
+  if (!sources || sources.length === 0) return null;
   const isLight = theme === 'light';
 
   return (

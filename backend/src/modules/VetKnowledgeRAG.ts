@@ -103,7 +103,7 @@ export async function retrievePassages(
           minScore: MIN_SCORE,
           useBm25: true,
         },
-        { timeout: 35000 }
+        { timeout: 4000 }
       );
       if (Array.isArray(res.data)) {
         return res.data;

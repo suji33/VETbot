@@ -123,9 +123,11 @@ async function postWithRetry(url: string, data: any, config: any, maxRetries = 2
   throw lastError || new Error('All free AI models are currently busy. Please try again shortly.');
 }
 
-async function callGeminiApi(prompt: string, timeoutMs = 35000): Promise<string> {
+async function callGeminiApi(prompt: string, timeoutMs = 8000): Promise<string> {
   const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-  if (!geminiKey) throw new Error('No Google/Gemini key');
+  if (!geminiKey || !geminiKey.startsWith('AIzaSy')) {
+    throw new Error('Valid Gemini AIzaSy API key not found, using OpenRouter provider');
+  }
 
   // Active, verified high-speed Gemini endpoints
   const models = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-pro-latest'];
