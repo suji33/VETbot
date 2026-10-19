@@ -43,8 +43,8 @@ app.use(cors({
       return callback(null, true);
     }
 
-    // Allow Vercel preview and production deployments (*.vercel.app)
-    if (/^https:\/\/[a-zA-Z0-9_.-]+\.vercel\.app$/.test(origin)) {
+    // Allow Vercel preview/production deployments (*.vercel.app) and Render (*.onrender.com)
+    if (/^https:\/\/[a-zA-Z0-9_.-]+\.(vercel\.app|onrender\.com)$/.test(origin)) {
       return callback(null, true);
     }
 
@@ -56,7 +56,7 @@ app.use(cors({
     callback(new Error(`Origin ${origin} not allowed by CORS policy`));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id', 'X-Session-Id', 'x-api-key'],
 }));
 

@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { runSafetyCheck, scanResponse } from '../modules/PawGuard';
 import { extractContext, ExtractedContext } from '../modules/PetMindNLP';
 import { analyzeVetImage, validateImage, VisionObservation } from '../modules/PawVision';
@@ -80,20 +81,22 @@ export async function orchestrate(req: ChatRequest): Promise<ChatResponse> {
     conversation?.context,
   );
 
-  // Load registered pet from MongoDB Atlas to personalize advice
-  try {
-    const registeredPets = await Pet.find({
-      $or: [{ ownerId: req.sessionId }, { ownerId: 'default_pet_owner' }],
-    }).sort({ createdAt: -1 });
-    const activePet = (req.petId ? await Pet.findById(req.petId) : null) || registeredPets[0] || (await Pet.findOne().sort({ createdAt: -1 }));
-    if (activePet) {
-      if (!conversationCtx.species) conversationCtx.species = activePet.species;
-      if (!conversationCtx.breed && activePet.breed) conversationCtx.breed = activePet.breed;
-      if (!conversationCtx.age && activePet.age) conversationCtx.age = `${Math.floor(activePet.age / 12)}y ${activePet.age % 12}m`;
-      steps.push(`Personalized with registered pet: ${activePet.name} (${activePet.species})`);
+  // Load registered pet from MongoDB Atlas to personalize advice (if connected)
+  if (mongoose.connection.readyState === 1) {
+    try {
+      const registeredPets = await Pet.find({
+        $or: [{ ownerId: req.sessionId }, { ownerId: 'default_pet_owner' }],
+      }).sort({ createdAt: -1 });
+      const activePet = (req.petId ? await Pet.findById(req.petId) : null) || registeredPets[0] || (await Pet.findOne().sort({ createdAt: -1 }));
+      if (activePet) {
+        if (!conversationCtx.species) conversationCtx.species = activePet.species;
+        if (!conversationCtx.breed && activePet.breed) conversationCtx.breed = activePet.breed;
+        if (!conversationCtx.age && activePet.age) conversationCtx.age = `${Math.floor(activePet.age / 12)}y ${activePet.age % 12}m`;
+        steps.push(`Personalized with registered pet: ${activePet.name} (${activePet.species})`);
+      }
+    } catch (err) {
+      // Non-blocking pet context load
     }
-  } catch (err) {
-    // Non-blocking pet context load
   }
 
   // ── Step 3: Image validation (if present) ───────────────────
@@ -280,6 +283,9 @@ export async function orchestrate(req: ChatRequest): Promise<ChatResponse> {
 // ── Helpers ───────────────────────────────────────────────────
 
 async function loadHistory(sessionId: string, conversationId?: string) {
+  if (mongoose.connection.readyState !== 1) {
+    return { history: [], conversation: null };
+  }
   try {
     let conversation = conversationId
       ? await Conversation.findOne({ _id: conversationId, sessionId })
@@ -312,6 +318,9 @@ async function saveMessage(
   sources: Array<{ title: string; url?: string; excerpt: string }>,
   context?: IConversationContext,
 ): Promise<string> {
+  if (mongoose.connection.readyState !== 1) {
+    return conversationId || 'temp_session';
+  }
   try {
     let conv = conversationId
       ? await Conversation.findOne({ _id: conversationId, sessionId })

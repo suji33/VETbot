@@ -5,12 +5,18 @@ import { Pet } from '../db/models/Pet';
 const router = Router();
 
 const PetSchema = z.object({
-  name:     z.string().min(1, 'Pet name is required').max(64),
-  species:  z.preprocess((val) => (val === '' ? 'dog' : val), z.enum(['dog', 'cat', 'other']).default('dog')),
+  name:     z.string().min(1, 'Pet name is required').max(64).trim(),
+  species:  z.preprocess(
+    (val) => (!val || String(val).trim() === '' ? 'dog' : String(val).trim().toLowerCase()),
+    z.string().min(1).max(64).default('dog')
+  ),
   breed:    z.preprocess((val) => (!val ? undefined : String(val).trim()), z.string().max(64).optional().nullable()),
   age:      z.preprocess((val) => (val === '' || val === null || val === undefined ? undefined : Number(val)), z.number().min(0).max(600).optional().nullable()),
   weightKg: z.preprocess((val) => (val === '' || val === null || val === undefined ? undefined : Number(val)), z.number().min(0).max(200).optional().nullable()),
-  sex:      z.preprocess((val) => (!val ? 'unknown' : val), z.enum(['male', 'female', 'unknown']).optional().default('unknown')),
+  sex:      z.preprocess(
+    (val) => (!val ? 'unknown' : String(val).trim().toLowerCase()),
+    z.enum(['male', 'female', 'unknown']).optional().default('unknown')
+  ),
   notes:    z.preprocess((val) => (!val ? undefined : String(val).trim()), z.string().max(1000).optional().nullable()),
 });
 
@@ -32,7 +38,7 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
     if (pets.length === 0) {
       pets = await Pet.find().sort({ createdAt: -1 });
     }
-    return res.json({ pets });
+    return res.json({ pets: pets || [] });
   } catch (err) {
     next(err);
   }
@@ -44,7 +50,8 @@ router.post('/', async (req: Request, res: Response, next: NextFunction) => {
 
   const parsed = PetSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: 'Invalid pet data', details: parsed.error.issues });
+    const errorMsg = parsed.error.issues.map((i) => `${i.path.join('.') || 'field'}: ${i.message}`).join(', ');
+    return res.status(400).json({ error: errorMsg || 'Invalid pet data', details: parsed.error.issues });
   }
 
   try {

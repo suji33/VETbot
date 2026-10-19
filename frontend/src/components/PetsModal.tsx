@@ -73,7 +73,13 @@ export const PetsModal: React.FC<PetsModalProps> = ({ isOpen, onClose }) => {
       setTimeout(() => setSuccessMessage(null), 4000);
       await fetchPets();
     } catch (err: any) {
-      setError(err?.response?.data?.error || err?.response?.data?.details?.[0]?.message || 'Failed to create pet profile');
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.response?.data?.details?.[0]?.message ||
+        err?.message ||
+        'Failed to create pet profile';
+      setError(msg);
     }
   };
 

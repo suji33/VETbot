@@ -68,7 +68,7 @@ export async function sendImageMessage(
 
 export async function getConversations() {
   const res = await api.get('/api/conversations');
-  return res.data.conversations;
+  return res.data?.conversations || [];
 }
 
 export async function deleteConversation(id: string) {
@@ -82,7 +82,7 @@ export interface PetData {
   breed?: string;
   age?: number;
   weightKg?: number;
-  sex?: 'male' | 'female' | 'unknown';
+  sex?: 'male' | 'female' | 'unknown' | string;
   notes?: string;
 }
 
@@ -90,7 +90,7 @@ export interface ReminderData {
   _id?: string;
   petId?: string;
   petName?: string;
-  type: 'feeding' | 'vaccination' | 'medication' | 'followup' | 'other';
+  type: 'feeding' | 'vaccination' | 'medication' | 'followup' | 'other' | string;
   title: string;
   description?: string;
   cronExpression: string;
@@ -102,7 +102,7 @@ export interface ReminderData {
 
 export async function getPets(): Promise<PetData[]> {
   const res = await api.get('/api/pets');
-  return res.data.pets;
+  return res.data?.pets || [];
 }
 
 export async function createPet(pet: PetData): Promise<PetData> {
@@ -116,7 +116,7 @@ export async function deletePet(id: string): Promise<void> {
 
 export async function getReminders(): Promise<ReminderData[]> {
   const res = await api.get('/api/reminders');
-  return res.data.reminders;
+  return res.data?.reminders || [];
 }
 
 export async function createReminder(reminder: ReminderData): Promise<ReminderData> {

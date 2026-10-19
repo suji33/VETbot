@@ -21,24 +21,28 @@ const upload = multer({
 
 // ── Validation schemas ────────────────────────────────────────
 const ChatSchema = z.object({
-  message: z.string().min(1).max(2000).trim(),
-  conversationId: z.string().optional(),
-  petId: z.string().optional(),
-  timezone: z.string().optional(),
-  sessionId: z.string().min(1).max(128),
+  message: z.string().min(1, 'Message is required').max(4000).trim(),
+  conversationId: z.preprocess((v) => (!v || String(v).trim() === '' ? undefined : String(v).trim()), z.string().optional()),
+  petId: z.preprocess((v) => (!v || String(v).trim() === '' ? undefined : String(v).trim()), z.string().optional()),
+  timezone: z.preprocess((v) => (!v || String(v).trim() === '' ? undefined : String(v).trim()), z.string().optional()),
+  sessionId: z.string().min(1).max(128).default('default_session'),
 });
 
 const ImageChatSchema = z.object({
-  message: z.string().max(2000).default('').transform((v) => v || 'Please analyze this image.'),
-  conversationId: z.string().optional(),
-  petId: z.string().optional(),
-  timezone: z.string().optional(),
-  sessionId: z.string().min(1).max(128),
+  message: z.preprocess((v) => (!v ? 'Please analyze this image.' : String(v).trim()), z.string().max(4000).default('Please analyze this image.')),
+  conversationId: z.preprocess((v) => (!v || String(v).trim() === '' ? undefined : String(v).trim()), z.string().optional()),
+  petId: z.preprocess((v) => (!v || String(v).trim() === '' ? undefined : String(v).trim()), z.string().optional()),
+  timezone: z.preprocess((v) => (!v || String(v).trim() === '' ? undefined : String(v).trim()), z.string().optional()),
+  sessionId: z.string().min(1).max(128).default('default_session'),
 });
 
 // ── POST /api/chat ────────────────────────────────────────────
 router.post('/', async (req: Request, res: Response, next: NextFunction) => {
-  const parsed = ChatSchema.safeParse(req.body);
+  const rawBody = req.body || {};
+  const headerSessionId = (req.headers['x-session-id'] as string)?.trim();
+  const effectiveSessionId = rawBody.sessionId?.trim() || headerSessionId || 'default_session';
+
+  const parsed = ChatSchema.safeParse({ ...rawBody, sessionId: effectiveSessionId });
   if (!parsed.success) {
     return res.status(400).json({
       error: 'Invalid request',
@@ -70,7 +74,11 @@ router.post(
       return res.status(400).json({ error: 'No image file provided. Please attach an image.' });
     }
 
-    const parsed = ImageChatSchema.safeParse(req.body);
+    const rawBody = req.body || {};
+    const headerSessionId = (req.headers['x-session-id'] as string)?.trim();
+    const effectiveSessionId = rawBody.sessionId?.trim() || headerSessionId || 'default_session';
+
+    const parsed = ImageChatSchema.safeParse({ ...rawBody, sessionId: effectiveSessionId });
     if (!parsed.success) {
       return res.status(400).json({
         error: 'Invalid request',

@@ -16,11 +16,15 @@ router.get('/status', (_req: Request, res: Response) => {
  * Triggers an immediate automated training, indexing, and learning update cycle.
  */
 router.post('/auto-update', async (_req: Request, res: Response) => {
-  const result = await runAutoTraining();
-  res.json({
-    success: true,
-    result,
-  });
+  try {
+    const result = await runAutoTraining();
+    return res.json({
+      success: true,
+      result,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Auto-update training failed', details: err?.message });
+  }
 });
 
 export default router;

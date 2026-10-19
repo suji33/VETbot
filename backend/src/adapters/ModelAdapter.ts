@@ -9,10 +9,10 @@ import axios from 'axios';
 const getBaseUrl = () => process.env.OPENROUTER_BASE_URL || 'https://openrouter.ai/api/v1';
 
 export const MODELS = {
-  get conversation() { return (process.env.CONVERSATION_MODEL || 'google/gemma-4-26b-a4b-it:free').trim(); },
-  get vision() { return (process.env.VISION_MODEL || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free').trim(); },
-  get answer() { return (process.env.ANSWER_MODEL || 'google/gemma-4-26b-a4b-it:free').trim(); },
-  get reviewer() { return (process.env.REVIEWER_MODEL || 'google/gemma-4-26b-a4b-it:free').trim(); },
+  get conversation() { return (process.env.CONVERSATION_MODEL || 'nvidia/nemotron-3.5-super-vl:free').trim(); },
+  get vision() { return (process.env.VISION_MODEL || 'nvidia/nemotron-3.5-super-vl:free').trim(); },
+  get answer() { return (process.env.ANSWER_MODEL || 'nvidia/nemotron-3.5-super-vl:free').trim(); },
+  get reviewer() { return (process.env.REVIEWER_MODEL || 'nvidia/nemotron-3.5-super-vl:free').trim(); },
   get embedding() { return (process.env.EMBEDDING_MODEL || 'openai/text-embedding-3-small').trim(); },
 };
 

@@ -18,26 +18,30 @@ export interface SafetyCheckResult {
 // These trigger immediate veterinary guidance with no LLM call.
 const EMERGENCY_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
   { pattern: /\b(can'?t|cannot|not|trouble|difficulty|struggling)\s+(breath|breathe|breathing)\b/i, label: 'breathing difficulty' },
-  { pattern: /\b(not breathing|stopped breathing|gasping)\b/i,                                       label: 'not breathing' },
-  { pattern: /\b(collaps(ed?|ing)|unconscious|unresponsive|passed out|fainted)\b/i,                  label: 'collapse' },
-  { pattern: /\b(seizure|fit|convuls|trembling uncontrollably|shaking violently)\b/i,                 label: 'seizure' },
-  { pattern: /\b(poison(ed?|ing)|ate.*(chocolate|xylitol|rat poison|antifreeze|grape|raisin|onion|ibuprofen|paracetamol|tylenol|acetaminophen))\b/i, label: 'suspected poisoning' },
-  { pattern: /\b(severe bleeding|bleeding heavily|blood pouring|blood gushing)\b/i,                   label: 'severe bleeding' },
-  { pattern: /\b(eye.*(injury|bleeding|bulging|popped)|bulging eye)\b/i,                             label: 'eye injury' },
-  { pattern: /\b(can'?t urinate|straining to urinate|no urine|blocked bladder)\b/i,                 label: 'urinary blockage' },
-  { pattern: /\b(bloat(ed?|ing)|distend(ed?)|swollen belly.*pain|twisted stomach)\b/i,              label: 'bloat or GDV' },
-  { pattern: /\b(broken bone|fracture|hit by car|run over|attacked by)\b/i,                         label: 'trauma' },
-  { pattern: /\b(paralys(ed?|is)|can'?t walk|sudden (weakness|paralysis))\b/i,                      label: 'paralysis' },
-  { pattern: /\b(heatstroke|heat stroke|overheating|collapsed in heat)\b/i,                         label: 'heatstroke' },
-  { pattern: /\b(pale gums|white gums|blue gums|grey gums)\b/i,                                     label: 'pale gums' },
+  { pattern: /\b(not breathing|stopped breathing|gasping|choking|airway blocked)\b/i, label: 'not breathing' },
+  { pattern: /\b(collaps(ed?|ing)|unconscious|unresponsive|passed out|fainted|comatose)\b/i, label: 'collapse' },
+  { pattern: /\b(seizure(s)?|fit|convuls(ing|ion)?|trembling uncontrollably|shaking violently)\b/i, label: 'seizure' },
+  { pattern: /\b(poison(ed?|ing)?|toxic(ity)?|overdose)\b/i, label: 'suspected poisoning' },
+  { pattern: /\b(ate|swallow(ed)?|ingest(ed)?|chew(ed)?|lick(ed)?|drank|drink|got into|fed)\b.*\b(chocolate|cocoa|xylitol|rat poison|rodenticide|antifreeze|ethylene glycol|grape(s)?|raisin(s)?|onion(s)?|garlic|lily|lilies|ibuprofen|advil|motrin|paracetamol|tylenol|acetaminophen|aspirin|naproxen|aleve|bleach|permethrin|pesticide)\b/i, label: 'suspected poisoning' },
+  { pattern: /\b(cat|kitten|feline)\b.*\b(lily|lilies|daylily|easter lily|tiger lily)\b/i, label: 'feline lily exposure' },
+  { pattern: /\b(severe bleeding|bleeding heavily|blood pouring|blood gushing|arterial spray)\b/i, label: 'severe bleeding' },
+  { pattern: /\b(eye.*(injury|bleeding|bulging|popped|proptosis)|bulging eye)\b/i, label: 'eye injury' },
+  { pattern: /\b(can'?t urinate|straining to urinate|straining to pee|no urine|crying in litter|blocked (bladder|cat|urethra))\b/i, label: 'urinary blockage' },
+  { pattern: /\b(bloat(ed?|ing)?|distend(ed)?|swollen belly.*pain|twisted stomach|gastric torsion|gdv)\b/i, label: 'bloat or GDV' },
+  { pattern: /\b(dry heav(ing)?|non-productive retching|trying to vomit.*nothing|unproductive retching)\b/i, label: 'non-productive retching / GDV' },
+  { pattern: /\b(broken bone|fracture|hit by car|run over|attacked by|mauled)\b/i, label: 'trauma' },
+  { pattern: /\b(paralys(ed?|is)|can'?t walk|sudden (weakness|paralysis)|drag(ging)? (back|hind) legs)\b/i, label: 'paralysis' },
+  { pattern: /\b(heatstroke|heat stroke|overheating|collapsed in heat)\b/i, label: 'heatstroke' },
+  { pattern: /\b(pale gums|white gums|blue gums|grey gums|brick red gums)\b/i, label: 'abnormal mucous membranes' },
+  { pattern: /\b(rabbit|bunny)\b.*\b(not eating|no poop|no feces|not pooping|stopped eating)\b/i, label: 'rabbit GI stasis' },
 ];
 
 // ── High-risk patterns requiring PawVerify review ────────────
 const HIGH_RISK_PATTERNS: Array<{ pattern: RegExp; label: string }> = [
-  { pattern: /\b(vomit(ing)?|throw(ing)? up).*(blood|red)\b/i,       label: 'vomiting blood' },
-  { pattern: /\b(blood in (stool|poop|urine|pee|wee))\b/i,           label: 'blood in waste' },
-  { pattern: /\b(not eaten|not eating|refuse.*food).*(day|days)\b/i,  label: 'prolonged anorexia' },
-  { pattern: /\b(give|administer|dose|dosage|how much).*(medicine|medication|ibuprofen|aspirin|amoxicillin)\b/i, label: 'medication dosage request' },
+  { pattern: /\b(vomit(ing)?|throw(ing)? up).*(blood|red)\b/i, label: 'vomiting blood' },
+  { pattern: /\b(blood in (stool|poop|urine|pee|wee))\b/i, label: 'blood in waste' },
+  { pattern: /\b(not eaten|not eating|refuse.*food).*(day|days)\b/i, label: 'prolonged anorexia' },
+  { pattern: /\b(give|administer|dose|dosage|how much|safe to give|can i give).*(medicine|medication|ibuprofen|advil|motrin|paracetamol|tylenol|acetaminophen|aspirin|naproxen|amoxicillin)\b/i, label: 'medication dosage request' },
   { pattern: /\b(diagnose|diagnosis|what disease|what illness|(is it|have|has)\s+(cancer|parvo|distemper|rabies)|cancer|parvo|distemper|rabies)\b/i, label: 'diagnosis request' },
 ];
 

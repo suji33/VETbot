@@ -8,9 +8,13 @@ const router = Router();
  * Assesses pet health risk profile without inventing false predictions or overriding emergency rules.
  */
 router.post('/', (req: Request, res: Response) => {
-  const input: PetHealthRiskInput = req.body;
-  const result = assessPetHealthRisk(input);
-  res.json(result);
+  try {
+    const input: PetHealthRiskInput = req.body || {};
+    const result = assessPetHealthRisk(input);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ error: 'Assessment calculation failed', details: err?.message });
+  }
 });
 
 export default router;
